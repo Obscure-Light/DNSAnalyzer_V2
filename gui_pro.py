@@ -32,6 +32,7 @@ class DNSAnalyzerGUIPro(tk.Frame):
         ttk.Label(top, text="Domains (one per line):").grid(row=0, column=0, sticky="w")
         self.domains = tk.Text(top, width=50, height=5)
         self.domains.grid(row=1, column=0, padx=(0,8), pady=4, sticky="w")
+        ttk.Button(top, text="Import Domains", command=self._import_domains).grid(row=2, column=0, sticky="w")
 
         right = ttk.Frame(top); right.grid(row=1, column=1, sticky="nw")
 
@@ -91,6 +92,19 @@ class DNSAnalyzerGUIPro(tk.Frame):
         bottom.pack(side="bottom", fill="x", padx=10, pady=8)
         self.pbar = ttk.Progressbar(bottom, mode="determinate")
         self.pbar.pack(fill="x")
+
+    def _import_domains(self):
+        path = filedialog.askopenfilename()
+        if not path:
+            return
+        try:
+            with open(path) as f:
+                lines = [line.strip() for line in f if line.strip()]
+        except OSError as e:
+            messagebox.showerror("File error", f"Could not read file: {e}")
+            return
+        self.domains.delete("1.0", "end")
+        self.domains.insert("1.0", "\n".join(lines))
 
     def _apply_preset(self, name):
         targets = set(RECORD_PRESETS[name])
