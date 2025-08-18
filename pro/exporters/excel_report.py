@@ -2,6 +2,8 @@
 from __future__ import annotations
 from pathlib import Path
 
+import pandas as pd
+
 def export_excel(df, out_path: str):
     # Conditional formatting with openpyxl
     with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
