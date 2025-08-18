@@ -7,7 +7,7 @@ from __future__ import annotations
 import concurrent.futures as cf
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Tuple, Iterable, Optional
+from typing import List, Dict, Any, Tuple, Iterable, Optional, Callable
 import time
 
 import dns.resolver
@@ -71,10 +71,19 @@ class DNSAnalyzerPro:
     def __init__(self, cfg: Optional[AnalyzerConfig] = None):
         self.cfg = cfg or AnalyzerConfig()
 
-    def run(self, domains: Iterable[str], record_types: Iterable[str], selectors: Iterable[str] = ()) -> pd.DataFrame:
+    def run(
+        self,
+        domains: Iterable[str],
+        record_types: Iterable[str],
+        selectors: Iterable[str] = (),
+        progress_cb: Optional[Callable[[], None]] = None,
+    ) -> pd.DataFrame:
         """
         Execute checks concurrently and return a DataFrame with
-        columns: Domain, RecordType, Selector, Value, Issues, Severity
+        columns: Domain, RecordType, Selector, Value, Issues, Severity.
+
+        If *progress_cb* is provided it will be invoked after each task
+        completes which allows callers to track progress.
         """
         domains = [normalize_domain(d) for d in domains if d.strip()]
         selectors = [s.strip() for s in selectors if s.strip()]
@@ -116,6 +125,8 @@ class DNSAnalyzerPro:
                 futures = [ex.submit(_do, t) for t in chunk]
                 for fut in cf.as_completed(futures):
                     results.extend(fut.result())
+                    if progress_cb:
+                        progress_cb()
 
         df = pd.DataFrame(results, columns=["Domain","RecordType","Selector","Value","Issues","Severity"])
         # Order rows

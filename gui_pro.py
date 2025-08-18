@@ -142,10 +142,15 @@ class DNSAnalyzerGUIPro(tk.Frame):
 
         self._render_df(pd.DataFrame(columns=["Domain","RecordType","Selector","Value","Issues","Severity"]))
 
+        def progress():
+            def _inc():
+                self.pbar["value"] += 1
+            self.after(0, _inc)
+
         def worker():
             cfg = AnalyzerConfig()
             analyzer = DNSAnalyzerPro(cfg)
-            df = analyzer.run(doms, rtypes, selectors)
+            df = analyzer.run(doms, rtypes, selectors, progress_cb=progress)
             self.df = df
             self._render_df(df)
             self.pbar["value"] = self.pbar["maximum"]
