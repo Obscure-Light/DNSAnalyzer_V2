@@ -127,6 +127,10 @@ class DNSAnalyzerGUIPro(tk.Frame):
         self.df = self.df.sort_values(col, ascending=ascending)
         self._render_df(self.df)
 
+    def update_ui(self, func, *args, **kwargs):
+        """Execute `func` in the Tkinter main thread."""
+        self.after(0, lambda: func(*args, **kwargs))
+
     def run_scan(self):
         doms = [d.strip() for d in self.domains.get("1.0","end").splitlines() if d.strip()]
         if not doms:
@@ -146,17 +150,19 @@ class DNSAnalyzerGUIPro(tk.Frame):
         self._render_df(pd.DataFrame(columns=["Domain","RecordType","Selector","Value","Issues","Severity"]))
 
         def progress():
-            def _inc():
-                self.pbar["value"] += 1
-            self.after(0, _inc)
+            self.update_ui(lambda: self.pbar.step(1))
 
         def worker():
             cfg = AnalyzerConfig()
             analyzer = DNSAnalyzerPro(cfg)
             df = analyzer.run(doms, rtypes, selectors, progress_cb=progress)
-            self.df = df
-            self._render_df(df)
-            self.pbar["value"] = self.pbar["maximum"]
+
+            def finalize():
+                self.df = df
+                self._render_df(df)
+                self.pbar["value"] = self.pbar["maximum"]
+
+            self.update_ui(finalize)
 
         threading.Thread(target=worker, daemon=True).start()
 
