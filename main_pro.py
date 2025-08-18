@@ -1,7 +1,6 @@
-
 #!/usr/bin/env python3
-import argparse, sys, json
-import pandas as pd
+import argparse
+import sys
 from pro.analyzer import DNSAnalyzerPro, AnalyzerConfig
 from pro.exporters.html_report import export_html
 
