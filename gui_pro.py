@@ -142,13 +142,17 @@ class DNSAnalyzerGUIPro(tk.Frame):
 
         self._render_df(pd.DataFrame(columns=["Domain","RecordType","Selector","Value","Issues","Severity"]))
 
+        def update_ui(df):
+            """Update widgets from the main thread."""
+            self.df = df
+            self._render_df(df)
+            self.pbar["value"] = self.pbar["maximum"]
+
         def worker():
             cfg = AnalyzerConfig()
             analyzer = DNSAnalyzerPro(cfg)
             df = analyzer.run(doms, rtypes, selectors)
-            self.df = df
-            self._render_df(df)
-            self.pbar["value"] = self.pbar["maximum"]
+            self.after(0, lambda: update_ui(df))
 
         threading.Thread(target=worker, daemon=True).start()
 
