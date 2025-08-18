@@ -1,6 +1,5 @@
 
 from __future__ import annotations
-from pathlib import Path
 
 import pandas as pd
 
@@ -12,7 +11,6 @@ def export_excel(df, out_path: str):
         from openpyxl.formatting.rule import CellIsRule
         from openpyxl.styles import PatternFill
         # Assume Severity in column F (6)
-        col = 6
         ws.conditional_formatting.add(f"F2:F{ws.max_row}",
             CellIsRule(operator="equal", formula=['"CRITICAL"'], fill=PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid"))
         )
