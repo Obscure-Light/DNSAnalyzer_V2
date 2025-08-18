@@ -42,13 +42,16 @@ class DNSAnalyzerGUIPro(tk.Frame):
         self.selectors.grid(row=1, column=0, pady=(0,10), sticky="w")
 
         ttk.Label(right, text="Record types:").grid(row=2, column=0, sticky="w")
-        self.record_vars = {}
-        records = sorted(list(set(RECORD_PRESETS["Email Security"] + RECORD_PRESETS["Base DNS"])))
+        records = sorted(RECORD_PRESETS["All"])
+        self.record_vars = {
+            rt: tk.BooleanVar(value=rt in RECORD_PRESETS["Email Security"])
+            for rt in records
+        }
         rec_frame = ttk.Frame(right); rec_frame.grid(row=3, column=0, sticky="w")
         for i, rt in enumerate(records):
-            v = tk.BooleanVar(value=True if rt in RECORD_PRESETS["Email Security"] else False)
-            self.record_vars[rt] = v
-            ttk.Checkbutton(rec_frame, text=rt, variable=v).grid(row=i//4, column=i%4, sticky="w", padx=4, pady=2)
+            ttk.Checkbutton(rec_frame, text=rt, variable=self.record_vars[rt]).grid(
+                row=i//4, column=i%4, sticky="w", padx=4, pady=2
+            )
 
         btns = ttk.Frame(right); btns.grid(row=4, column=0, pady=6, sticky="w")
         ttk.Button(btns, text="Preset: Email Security", command=lambda: self._apply_preset("Email Security")).grid(row=0,column=0,padx=4)
