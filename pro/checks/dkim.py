@@ -1,6 +1,6 @@
 
 from typing import List, Dict, Tuple, Callable
-import base64, re
+import base64
 QueryFunc = Callable[[str, str], Tuple[bool, List[str], str]]
 
 def _row(domain, selector, value, issues, severity):

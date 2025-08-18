@@ -3,6 +3,7 @@ import argparse
 import sys
 from pro.analyzer import DNSAnalyzerPro, AnalyzerConfig
 from pro.exporters.html_report import export_html
+from pro.exporters.excel_report import export_excel
 
 def main():
     ap = argparse.ArgumentParser(description="DNS Analyzer Pro – CLI (non-breaking: original CLI unchanged)")
@@ -54,7 +55,7 @@ def main():
     elif args.output.endswith(".json"):
         df.to_json(args.output, orient="records", force_ascii=False, indent=2)
     elif args.output.endswith(".xlsx"):
-        df.to_excel(args.output, index=False)
+        export_excel(df, args.output)
     elif args.output.endswith(".html"):
         export_html(df, args.output)
     else:
