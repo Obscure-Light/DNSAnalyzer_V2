@@ -59,7 +59,8 @@ class DNSAnalyzerGUIPro(tk.Frame):
         ttk.Button(btns, text="Select All", command=lambda: self._apply_preset("All")).grid(row=0,column=2,padx=4)
 
         run_row = ttk.Frame(right); run_row.grid(row=5, column=0, pady=6, sticky="w")
-        ttk.Button(run_row, text="Run", command=self.run_scan).grid(row=0, column=0, padx=(0,6))
+        self.run_button = ttk.Button(run_row, text="Run", command=self.run_scan)
+        self.run_button.grid(row=0, column=0, padx=(0,6))
         ttk.Button(run_row, text="Export CSV", command=lambda: self._export("csv")).grid(row=0,column=1, padx=4)
         ttk.Button(run_row, text="Export JSON", command=lambda: self._export("json")).grid(row=0,column=2, padx=4)
         ttk.Button(run_row, text="Export HTML", command=lambda: self._export("html")).grid(row=0,column=3, padx=4)
@@ -132,14 +133,17 @@ class DNSAnalyzerGUIPro(tk.Frame):
         self.after(0, lambda: func(*args, **kwargs))
 
     def run_scan(self):
+        self.run_button["state"] = "disabled"
         doms = [d.strip() for d in self.domains.get("1.0","end").splitlines() if d.strip()]
         if not doms:
             messagebox.showerror("Input error", "Add at least one domain")
+            self.run_button["state"] = "normal"
             return
         selectors = [s.strip() for s in self.selectors_var.get().split(",") if s.strip()]
         rtypes = [rt for rt,v in self.record_vars.items() if v.get()]
         if not rtypes:
             messagebox.showerror("Input error", "Select at least one record type")
+            self.run_button["state"] = "normal"
             return
 
         # Progress bar (rough)
@@ -161,6 +165,7 @@ class DNSAnalyzerGUIPro(tk.Frame):
                 self.df = df
                 self._render_df(df)
                 self.pbar["value"] = self.pbar["maximum"]
+                self.run_button["state"] = "normal"
 
             self.update_ui(finalize)
 
