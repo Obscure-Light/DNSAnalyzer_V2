@@ -32,14 +32,6 @@ class Task:
     rtype: str
     selector: str = ""
 
-def _mk_resolver(cfg: AnalyzerConfig) -> dns.resolver.Resolver:
-    r = dns.resolver.Resolver(configure=True)
-    if cfg.nameservers:
-        r.nameservers = cfg.nameservers
-    r.timeout = cfg.timeout
-    r.lifetime = cfg.lifetime
-    return r
-
 @lru_cache(maxsize=2048)
 def _query_cached(qname: str, rtype: str, nameservers_key: str, timeout: float, lifetime: float) -> Tuple[bool, List[str], str]:
     """
@@ -108,7 +100,6 @@ class DNSAnalyzerPro:
                     "Domain": task.domain, "RecordType": task.rtype, "Selector": task.selector,
                     "Value": "", "Issues": f"Record type not supported: {task.rtype}", "Severity": "INFO"
                 }]
-            resolver = _mk_resolver(self.cfg)
             def q(qname: str, rtype: str) -> Tuple[bool, List[str], str]:
                 return _query_cached(qname, rtype, nameservers_key, self.cfg.timeout, self.cfg.lifetime)
             try:
