@@ -22,7 +22,11 @@ def check_dmarc(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     ok, vals, err = q(name, "TXT")
     if not ok:
         return [_row(domain, selector, "", "DMARC record not found", "CRITICAL")]
-    dmarcs = [v.strip('"') for v in vals if v.lower().replace(" ","").startswith("v=dmarc1")]
+    dmarcs = []
+    for v in vals:
+        cleaned = v.replace('"', '').strip()
+        if cleaned.lower().replace(' ', '').startswith('v=dmarc1'):
+            dmarcs.append(cleaned)
     if not dmarcs:
         return [_row(domain, selector, "", "DMARC record not found", "CRITICAL")]
     if len(dmarcs) > 1:
