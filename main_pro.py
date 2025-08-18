@@ -14,7 +14,18 @@ def main():
     ap.add_argument("--lifetime", type=float, default=5.0)
     ap.add_argument("--no-extended", action="store_true", help="Disable extended checks (MTA-STS, TLS-RPT, DNSSEC info)")
     ap.add_argument("-o","--output", help="Output file (.csv|.json|.xlsx|.html)")
+    ap.add_argument("--domains-file", help="File with domains (one per line)")
     args = ap.parse_args()
+
+    if args.domains_file:
+        try:
+            with open(args.domains_file) as f:
+                domains = [line.strip() for line in f if line.strip()]
+        except OSError as e:
+            ap.error(f"Could not read domains file: {e}")
+        if args.domain is None:
+            args.domain = []
+        args.domain.extend(domains)
 
     if not args.domain or not args.record:
         ap.error("Provide at least one --domain and one --record")
