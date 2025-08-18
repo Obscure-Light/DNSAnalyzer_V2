@@ -122,3 +122,30 @@ Opzioni principali:
 - **A/AAAA**: esistenza indirizzi
 - **NS**: ≥2 ⇒ OK, 1 ⇒ WARN
 - **SOA/CAA/TXT/CNAME**: esistenza e validità
+
+---
+
+## Plugin esterni
+
+DNS Analyzer può essere esteso con plugin che registrano nuovi controlli
+tramite l'entry point `dns_analyzer.checks`.
+
+### setup.py
+```python
+from setuptools import setup
+
+setup(
+    # ...
+    entry_points={
+        "dns_analyzer.checks": [
+            "CUSTOM=my_plugin:check_custom",
+        ],
+    },
+)
+```
+
+### pyproject.toml
+```toml
+[project.entry-points."dns_analyzer.checks"]
+CUSTOM = "my_plugin:check_custom"
+```

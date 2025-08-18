@@ -1,4 +1,6 @@
 
+import importlib.metadata
+
 from .spf import check_spf
 from .dmarc import check_dmarc
 from .dkim import check_dkim
@@ -25,3 +27,6 @@ REGISTRY = {
     "TLS-RPT": check_tls_rpt,
     "DNSSEC": check_dnssec_info,
 }
+
+for ep in importlib.metadata.entry_points(group="dns_analyzer.checks"):
+    REGISTRY[ep.name] = ep.load()
