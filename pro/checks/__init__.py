@@ -8,7 +8,7 @@ from .bimi import check_bimi
 from .mx import check_mx
 from .base import (
     check_a, check_aaaa, check_ns, check_cname, check_txt, check_soa, check_caa,
-    check_mta_sts, check_tls_rpt, check_dnssec_info
+    check_srv, check_tlsa, check_mta_sts, check_tls_rpt, check_dnssec_info
 )
 REGISTRY = {
     "A": check_a,
@@ -19,6 +19,8 @@ REGISTRY = {
     "TXT": check_txt,
     "SOA": check_soa,
     "CAA": check_caa,
+    "SRV": check_srv,
+    "TLSA": check_tlsa,
     "SPF": check_spf,
     "DMARC": check_dmarc,
     "DKIM": check_dkim,  # requires selectors list
