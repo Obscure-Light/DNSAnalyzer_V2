@@ -7,8 +7,7 @@ from __future__ import annotations
 import concurrent.futures as cf
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Tuple, Iterable, Optional, Callable
-import time
+from typing import List, Dict, Tuple, Iterable, Optional, Callable
 
 import dns.resolver
 import dns.rdatatype

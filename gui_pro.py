@@ -5,6 +5,7 @@ import threading
 import pandas as pd
 from pro.analyzer import DNSAnalyzerPro, AnalyzerConfig
 from pro.checks import REGISTRY
+from pro.exporters.excel_report import export_excel
 
 RECORD_PRESETS = {
     "Email Security": ["SPF", "DMARC", "DKIM", "BIMI", "MX", "MTA-STS", "TLS-RPT", "CAA", "TLSA"],
@@ -212,8 +213,7 @@ class DNSAnalyzerGUIPro(tk.Frame):
         elif kind=="xlsx":
             path = filedialog.asksaveasfilename(defaultextension=".xlsx")
             if not path: return
-            # use pandas basic export to keep deps light here
-            self.df.to_excel(path, index=False)
+            export_excel(self.df, path)
         messagebox.showinfo("Export", f"Saved to {path}")
 
 if __name__ == "__main__":
