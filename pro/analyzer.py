@@ -15,6 +15,7 @@ import dns.rdatatype
 import pandas as pd
 
 from .checks import REGISTRY
+from . import cache
 
 SEVERITY_ORDER = {"OK": 0, "INFO": 1, "WARN": 2, "CRITICAL": 3}
 
@@ -25,6 +26,7 @@ class AnalyzerConfig:
     lifetime: float = 5.0
     max_workers: int = 16
     extended: bool = True  # enable extended checks (MTA‑STS, TLS‑RPT, etc.)
+    cache_path: Optional[str] = None  # path to cache DB (None = disabled)
 
 @dataclass
 class Task:
@@ -34,9 +36,12 @@ class Task:
 
 @lru_cache(maxsize=2048)
 def _query_cached(qname: str, rtype: str, nameservers_key: str, timeout: float, lifetime: float) -> Tuple[bool, List[str], str]:
-    """
-    Cached raw query. Returns (ok, values, error)
-    """
+    """Cached raw query. Returns ``(ok, values, error)``."""
+
+    cached = cache.get_cache(qname, rtype)
+    if cached is not None:
+        return cached
+
     res = dns.resolver.Resolver(configure=True)
     if nameservers_key:
         res.nameservers = nameservers_key.split(",")
@@ -45,9 +50,12 @@ def _query_cached(qname: str, rtype: str, nameservers_key: str, timeout: float, 
     try:
         ans = res.resolve(qname, rtype)
         values = [str(r.to_text()) for r in ans]
-        return True, values, ""
+        result = True, values, ""
     except Exception as e:
-        return False, [], f"{type(e).__name__}: {e}"
+        result = False, [], f"{type(e).__name__}: {e}"
+
+    cache.set_cache(qname, rtype, result)
+    return result
 
 def normalize_domain(d: str) -> str:
     d = d.strip()
@@ -62,6 +70,7 @@ def normalize_domain(d: str) -> str:
 class DNSAnalyzerPro:
     def __init__(self, cfg: Optional[AnalyzerConfig] = None):
         self.cfg = cfg or AnalyzerConfig()
+        cache.DB_PATH = self.cfg.cache_path
 
     def run(
         self,
