@@ -12,7 +12,7 @@ La **versione Pro** aggiunge UI tabellare moderna, **report HTML**, controlli es
 - **Python 3.9+**
 - Dipendenze principali (vedi `requirements.txt`):
   - `dnspython`, `pandas`, `openpyxl`
-  - **Pro**: `Jinja2`, `requests`, `PyYAML`, `rich`
+  - **Pro**: `Jinja2`
 
 Installa tutto con:
 ```bash
