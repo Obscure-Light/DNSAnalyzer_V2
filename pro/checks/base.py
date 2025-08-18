@@ -56,6 +56,18 @@ def check_caa(domain: str, selector: str, q: QueryFunc, extended: bool=True):
         return [_row(domain, "CAA", selector, "", err, "INFO")]
     return _ok(domain, "CAA", selector, vals)
 
+def check_srv(domain: str, selector: str, q: QueryFunc, extended: bool=True):
+    ok, vals, err = q(domain, "SRV")
+    if not ok:
+        return [_row(domain, "SRV", selector, "", err, "INFO")]
+    return _ok(domain, "SRV", selector, vals)
+
+def check_tlsa(domain: str, selector: str, q: QueryFunc, extended: bool=True):
+    ok, vals, err = q(domain, "TLSA")
+    if not ok:
+        return [_row(domain, "TLSA", selector, "", err, "INFO")]
+    return _ok(domain, "TLSA", selector, vals)
+
 def check_mta_sts(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     if not extended:
         return [_row(domain, "MTA-STS", selector, "", "Extended checks disabled", "INFO")]

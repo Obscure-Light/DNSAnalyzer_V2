@@ -7,9 +7,9 @@ from pro.analyzer import DNSAnalyzerPro, AnalyzerConfig
 from pro.checks import REGISTRY
 
 RECORD_PRESETS = {
-    "Email Security": ["SPF", "DMARC", "DKIM", "BIMI", "MX", "MTA-STS", "TLS-RPT", "CAA"],
-    "Base DNS": ["A","AAAA","NS","SOA","CAA","MX","TXT"],
-    "All": list(REGISTRY.keys()),
+    "Email Security": ["SPF", "DMARC", "DKIM", "BIMI", "MX", "MTA-STS", "TLS-RPT", "CAA", "TLSA"],
+    "Base DNS": ["A","AAAA","NS","SOA","CAA","MX","TXT","SRV","TLSA"],
+    "All": list(REGISTRY.keys()),  # includes SRV and TLSA
 }
 
 class DNSAnalyzerGUIPro(tk.Frame):
