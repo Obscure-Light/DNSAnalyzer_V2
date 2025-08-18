@@ -23,7 +23,6 @@ class DNSAnalyzerGUIPro(tk.Frame):
         self._build_table()
         self._build_progress()
 
-        self.analyzer = DNSAnalyzerPro()
         self.df = pd.DataFrame(columns=["Domain","RecordType","Selector","Value","Issues","Severity"])
 
     def _build_controls(self):
