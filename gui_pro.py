@@ -68,6 +68,8 @@ class DNSAnalyzerGUIPro(tk.Frame):
         ttk.Button(run_row, text="Export JSON", command=lambda: self._export("json")).grid(row=0,column=4, padx=4)
         ttk.Button(run_row, text="Export HTML", command=lambda: self._export("html")).grid(row=0,column=5, padx=4)
         ttk.Button(run_row, text="Export Excel", command=lambda: self._export("xlsx")).grid(row=0,column=6, padx=4)
+        self.cache_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(run_row, text="Cache", variable=self.cache_var).grid(row=0, column=7, padx=4)
 
     def _build_table(self):
         mid = ttk.Frame(self)
@@ -173,7 +175,10 @@ class DNSAnalyzerGUIPro(tk.Frame):
             self.update_ui(lambda: self.pbar.step(1))
 
         def worker():
-            cfg = AnalyzerConfig(max_workers=self.workers_var.get())
+            cfg = AnalyzerConfig(
+                max_workers=self.workers_var.get(),
+                cache_path=".dns_cache.sqlite" if self.cache_var.get() else None,
+            )
             analyzer = DNSAnalyzerPro(cfg)
             df = analyzer.run(doms, rtypes, selectors, progress_cb=progress)
 

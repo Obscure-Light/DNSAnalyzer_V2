@@ -15,6 +15,8 @@ def main():
     ap.add_argument("--workers", type=int, default=AnalyzerConfig.max_workers,
                     help="Number of concurrent worker threads")
     ap.add_argument("--no-extended", action="store_true", help="Disable extended checks (MTA-STS, TLS-RPT, DNSSEC info)")
+    ap.add_argument("--cache", nargs="?", const=".dns_cache.sqlite", default=None,
+                    help="Enable query cache (optional path)")
     ap.add_argument("-o","--output", help="Output file (.csv|.json|.xlsx|.html)")
     ap.add_argument("--domains-file", help="File with domains (one per line)")
     args = ap.parse_args()
@@ -38,6 +40,7 @@ def main():
         lifetime=args.lifetime,
         extended=not args.no_extended,
         max_workers=args.workers,
+        cache_path=args.cache,
     )
     analyzer = DNSAnalyzerPro(cfg)
     df = analyzer.run(args.domain, args.record, args.selector)
