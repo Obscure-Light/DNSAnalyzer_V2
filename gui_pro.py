@@ -59,12 +59,15 @@ class DNSAnalyzerGUIPro(tk.Frame):
         ttk.Button(btns, text="Select All", command=lambda: self._apply_preset("All")).grid(row=0,column=2,padx=4)
 
         run_row = ttk.Frame(right); run_row.grid(row=5, column=0, pady=6, sticky="w")
+        ttk.Label(run_row, text="Workers:").grid(row=0, column=0, padx=(0,4))
+        self.workers_var = tk.IntVar(value=AnalyzerConfig.max_workers)
+        ttk.Spinbox(run_row, from_=1, to=64, textvariable=self.workers_var, width=5).grid(row=0, column=1, padx=(0,10))
         self.run_button = ttk.Button(run_row, text="Run", command=self.run_scan)
-        self.run_button.grid(row=0, column=0, padx=(0,6))
-        ttk.Button(run_row, text="Export CSV", command=lambda: self._export("csv")).grid(row=0,column=1, padx=4)
-        ttk.Button(run_row, text="Export JSON", command=lambda: self._export("json")).grid(row=0,column=2, padx=4)
-        ttk.Button(run_row, text="Export HTML", command=lambda: self._export("html")).grid(row=0,column=3, padx=4)
-        ttk.Button(run_row, text="Export Excel", command=lambda: self._export("xlsx")).grid(row=0,column=4, padx=4)
+        self.run_button.grid(row=0, column=2, padx=(0,6))
+        ttk.Button(run_row, text="Export CSV", command=lambda: self._export("csv")).grid(row=0,column=3, padx=4)
+        ttk.Button(run_row, text="Export JSON", command=lambda: self._export("json")).grid(row=0,column=4, padx=4)
+        ttk.Button(run_row, text="Export HTML", command=lambda: self._export("html")).grid(row=0,column=5, padx=4)
+        ttk.Button(run_row, text="Export Excel", command=lambda: self._export("xlsx")).grid(row=0,column=6, padx=4)
 
     def _build_table(self):
         mid = ttk.Frame(self)
@@ -170,7 +173,7 @@ class DNSAnalyzerGUIPro(tk.Frame):
             self.update_ui(lambda: self.pbar.step(1))
 
         def worker():
-            cfg = AnalyzerConfig()
+            cfg = AnalyzerConfig(max_workers=self.workers_var.get())
             analyzer = DNSAnalyzerPro(cfg)
             df = analyzer.run(doms, rtypes, selectors, progress_cb=progress)
 

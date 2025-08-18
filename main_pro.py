@@ -12,6 +12,8 @@ def main():
     ap.add_argument("--nameserver", action="append", default=[], help="Custom DNS server IP (repeatable)")
     ap.add_argument("--timeout", type=float, default=3.0)
     ap.add_argument("--lifetime", type=float, default=5.0)
+    ap.add_argument("--workers", type=int, default=AnalyzerConfig.max_workers,
+                    help="Number of concurrent worker threads")
     ap.add_argument("--no-extended", action="store_true", help="Disable extended checks (MTA-STS, TLS-RPT, DNSSEC info)")
     ap.add_argument("-o","--output", help="Output file (.csv|.json|.xlsx|.html)")
     ap.add_argument("--domains-file", help="File with domains (one per line)")
@@ -30,7 +32,13 @@ def main():
     if not args.domain or not args.record:
         ap.error("Provide at least one --domain and one --record")
 
-    cfg = AnalyzerConfig(nameservers=args.nameserver, timeout=args.timeout, lifetime=args.lifetime, extended=not args.no_extended)
+    cfg = AnalyzerConfig(
+        nameservers=args.nameserver,
+        timeout=args.timeout,
+        lifetime=args.lifetime,
+        extended=not args.no_extended,
+        max_workers=args.workers,
+    )
     analyzer = DNSAnalyzerPro(cfg)
     df = analyzer.run(args.domain, args.record, args.selector)
 
