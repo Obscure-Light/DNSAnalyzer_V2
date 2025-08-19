@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import atexit
 import json
 import sqlite3
 from threading import Lock
@@ -12,25 +13,42 @@ from typing import List, Optional, Tuple
 DB_PATH: Optional[str] = None
 
 _lock = Lock()
+_conn: Optional[sqlite3.Connection] = None
 
 
-def _ensure_db(path: str) -> sqlite3.Connection:
-    """Return a connection to the cache database, creating tables if needed."""
+def _get_conn() -> sqlite3.Connection:
+    """Return the singleton cache connection, creating it if needed."""
 
-    conn = sqlite3.connect(path)
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cache (
-            qname TEXT NOT NULL,
-            rtype TEXT NOT NULL,
-            ok INTEGER NOT NULL,
-            data TEXT NOT NULL,
-            error TEXT,
-            PRIMARY KEY (qname, rtype)
+    global _conn
+    if _conn is None:
+        if DB_PATH is None:
+            raise RuntimeError("DB_PATH is not set")
+        _conn = sqlite3.connect(DB_PATH)
+        _conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cache (
+                qname TEXT NOT NULL,
+                rtype TEXT NOT NULL,
+                ok INTEGER NOT NULL,
+                data TEXT NOT NULL,
+                error TEXT,
+                PRIMARY KEY (qname, rtype)
+            )
+            """
         )
-        """
-    )
-    return conn
+    return _conn
+
+
+def close_cache() -> None:
+    """Close the global cache connection if it exists."""
+
+    global _conn
+    if _conn is not None:
+        _conn.close()
+        _conn = None
+
+
+atexit.register(close_cache)
 
 
 def get_cache(qname: str, rtype: str) -> Optional[Tuple[bool, List[str], str]]:
@@ -40,13 +58,12 @@ def get_cache(qname: str, rtype: str) -> Optional[Tuple[bool, List[str], str]]:
         return None
 
     with _lock:
-        conn = _ensure_db(DB_PATH)
+        conn = _get_conn()
         cur = conn.execute(
             "SELECT ok, data, error FROM cache WHERE qname=? AND rtype=?",
             (qname, rtype),
         )
         row = cur.fetchone()
-        conn.close()
 
     if row:
         ok, values_json, error = row
@@ -64,11 +81,10 @@ def set_cache(qname: str, rtype: str, result: Tuple[bool, List[str], str]) -> No
     ok, values, error = result
 
     with _lock:
-        conn = _ensure_db(DB_PATH)
+        conn = _get_conn()
         conn.execute(
             "REPLACE INTO cache (qname, rtype, ok, data, error) VALUES (?,?,?,?,?)",
             (qname, rtype, int(ok), json.dumps(values), error),
         )
         conn.commit()
-        conn.close()
 
