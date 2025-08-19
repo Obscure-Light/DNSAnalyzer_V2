@@ -3,3 +3,4 @@ dnspython>=2.6
 openpyxl>=3.1   # solo per export Excel (.xlsx)
 # Tkinter è già incluso. Su Linux: sudo apt install python3-tk
 Jinja2>=3.1
+pytest>=8.0
