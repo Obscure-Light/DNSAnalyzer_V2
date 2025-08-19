@@ -1,10 +1,8 @@
 
-from typing import List, Dict, Tuple, Callable
+from typing import List, Tuple, Callable
 import base64
+from .utils import make_row
 QueryFunc = Callable[[str, str], Tuple[bool, List[str], str]]
-
-def _row(domain, selector, value, issues, severity):
-    return {"Domain": domain, "RecordType": "DKIM", "Selector": selector or "", "Value": value, "Issues": issues, "Severity": severity}
 
 def _kv(txt: str):
     kv = {}
@@ -28,13 +26,13 @@ def check_dkim(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     name = f"{selector}._domainkey.{domain}"
     ok, vals, err = q(name, "TXT")
     if not ok or not vals:
-        return [_row(domain, selector, "", "DKIM selector not found", "CRITICAL")]
+        return [make_row(domain, "DKIM", selector, "", "DKIM selector not found", "CRITICAL")]
     # Some providers split across multiple strings; join
     txt = "".join(v.strip('"') for v in vals)
     # If multiple records, report separately
     recs = [r.strip() for r in txt.split('" "') if r.strip()]
     if len(recs) > 1:
-        return [_row(domain, selector, " | ".join(recs), "Multiple DKIM TXT for selector", "CRITICAL")]
+        return [make_row(domain, "DKIM", selector, " | ".join(recs), "Multiple DKIM TXT for selector", "CRITICAL")]
     kv = _kv(txt)
     p = kv.get("p","")
     bits = _estimate_bits_from_p(p) if p else 0
@@ -52,4 +50,4 @@ def check_dkim(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     if kv.get("t","")=="y":
         issues.append("Testing mode t=y")
         sev = "WARN"
-    return [_row(domain, selector, txt, "; ".join(issues), sev)]
+    return [make_row(domain, "DKIM", selector, txt, "; ".join(issues), sev)]

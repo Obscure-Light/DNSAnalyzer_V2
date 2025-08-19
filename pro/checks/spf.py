@@ -1,9 +1,7 @@
 
-from typing import List, Dict, Tuple, Callable
+from typing import List, Tuple, Callable
+from .utils import make_row
 QueryFunc = Callable[[str, str], Tuple[bool, List[str], str]]
-
-def _row(domain, selector, value, issues, severity):
-    return {"Domain": domain, "RecordType": "SPF", "Selector": selector or "", "Value": value, "Issues": issues, "Severity": severity}
 
 def _parse_spf(txt: str) -> List[str]:
     # very light parser
@@ -18,12 +16,12 @@ def _lookup_cost(mech: str) -> int:
 def check_spf(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     ok, vals, err = q(domain, "TXT")
     if not ok:
-        return [_row(domain, selector, "", f"TXT query error: {err}", "WARN")]
+        return [make_row(domain, "SPF", selector, "", f"TXT query error: {err}", "WARN")]
     spfs = [v.strip('"') for v in vals if v.replace(" ", "").lower().startswith("v=spf1")]
     if not spfs:
-        return [_row(domain, selector, "", "No SPF record found", "WARN")]
+        return [make_row(domain, "SPF", selector, "", "No SPF record found", "WARN")]
     if len(spfs) > 1:
-        return [_row(domain, selector, " | ".join(spfs), "Multiple SPF records (should be single)", "CRITICAL")]
+        return [make_row(domain, "SPF", selector, " | ".join(spfs), "Multiple SPF records (should be single)", "CRITICAL")]
     spf = spfs[0]
     mechs = _parse_spf(spf)
     lookups = sum(_lookup_cost(m) for m in mechs)
@@ -40,4 +38,4 @@ def check_spf(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     if not any(m.endswith("all") for m in mechs):
         issues.append("Missing 'all' mechanism")
         sev = "WARN"
-    return [_row(domain, selector, spf, "; ".join(issues), sev)]
+    return [make_row(domain, "SPF", selector, spf, "; ".join(issues), sev)]
