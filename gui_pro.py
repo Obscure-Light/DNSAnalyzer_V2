@@ -200,20 +200,38 @@ class DNSAnalyzerGUIPro(tk.Frame):
         if kind=="csv":
             path = filedialog.asksaveasfilename(defaultextension=".csv")
             if not path: return
-            self.df.to_csv(path, index=False)
+            try:
+                self.df.to_csv(path, index=False)
+            except OSError as e:
+                messagebox.showerror("Export error", str(e))
+                return
         elif kind=="json":
             path = filedialog.asksaveasfilename(defaultextension=".json")
             if not path: return
-            self.df.to_json(path, orient="records", force_ascii=False, indent=2)
+            try:
+                self.df.to_json(path, orient="records", force_ascii=False, indent=2)
+            except OSError as e:
+                messagebox.showerror("Export error", str(e))
+                return
         elif kind=="html":
             path = filedialog.asksaveasfilename(defaultextension=".html")
             if not path: return
             from pro.exporters.html_report import export_html
-            export_html(self.df, path)
+            try:
+                export_html(self.df, path)
+            except OSError as e:
+                messagebox.showerror("Export error", str(e))
+                return
         elif kind=="xlsx":
             path = filedialog.asksaveasfilename(defaultextension=".xlsx")
             if not path: return
-            export_excel(self.df, path)
+            try:
+                export_excel(self.df, path)
+            except OSError as e:
+                messagebox.showerror("Export error", str(e))
+                return
+        else:
+            return
         messagebox.showinfo("Export", f"Saved to {path}")
 
 if __name__ == "__main__":
