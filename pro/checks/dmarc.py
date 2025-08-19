@@ -1,9 +1,7 @@
 
-from typing import List, Dict, Tuple, Callable
+from typing import List, Tuple, Callable
+from .utils import make_row
 QueryFunc = Callable[[str, str], Tuple[bool, List[str], str]]
-
-def _row(domain, selector, value, issues, severity):
-    return {"Domain": domain, "RecordType": "DMARC", "Selector": selector or "", "Value": value, "Issues": issues, "Severity": severity}
 
 def _kv_map(txt: str):
     parts = [p.strip() for p in txt.split(";") if p.strip()]
@@ -20,16 +18,16 @@ def check_dmarc(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     name = f"_dmarc.{domain}"
     ok, vals, err = q(name, "TXT")
     if not ok:
-        return [_row(domain, selector, "", "DMARC record not found", "CRITICAL")]
+        return [make_row(domain, "DMARC", selector, "", "DMARC record not found", "CRITICAL")]
     dmarcs = []
     for v in vals:
         cleaned = v.replace('"', '').strip()
         if cleaned.lower().replace(' ', '').startswith('v=dmarc1'):
             dmarcs.append(cleaned)
     if not dmarcs:
-        return [_row(domain, selector, "", "DMARC record not found", "CRITICAL")]
+        return [make_row(domain, "DMARC", selector, "", "DMARC record not found", "CRITICAL")]
     if len(dmarcs) > 1:
-        return [_row(domain, selector, " | ".join(dmarcs), "Multiple DMARC records", "CRITICAL")]
+        return [make_row(domain, "DMARC", selector, " | ".join(dmarcs), "Multiple DMARC records", "CRITICAL")]
     rec = dmarcs[0]
     kv = _kv_map(rec)
     p = kv.get("p","").lower()
@@ -49,4 +47,4 @@ def check_dmarc(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     if adkim!="s" or aspf!="s":
         issues.append(f"Alignment adkim={adkim}, aspf={aspf} (suggest 's')")
         sev = "WARN"
-    return [_row(domain, selector, rec, "; ".join(issues), sev)]
+    return [make_row(domain, "DMARC", selector, rec, "; ".join(issues), sev)]

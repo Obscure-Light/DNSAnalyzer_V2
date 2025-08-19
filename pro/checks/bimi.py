@@ -1,9 +1,7 @@
 
-from typing import List, Dict, Tuple, Callable
+from typing import List, Tuple, Callable
+from .utils import make_row
 QueryFunc = Callable[[str, str], Tuple[bool, List[str], str]]
-
-def _row(domain, selector, value, issues, severity):
-    return {"Domain": domain, "RecordType": "BIMI", "Selector": selector or "", "Value": value, "Issues": issues, "Severity": severity}
 
 def _kv(txt: str):
     kv = {}
@@ -19,7 +17,7 @@ def check_bimi(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     name = f"{selector}._bimi.{domain}"
     ok, vals, err = q(name, "TXT")
     if not ok:
-        return [_row(domain, selector, "", "BIMI record not found", "INFO")]
+        return [make_row(domain, "BIMI", selector, "", "BIMI record not found", "INFO")]
     txt = " ".join(v.strip('"') for v in vals)
     kv = _kv(txt)
     issues = []
@@ -30,4 +28,4 @@ def check_bimi(domain: str, selector: str, q: QueryFunc, extended: bool=True):
     if "a" not in kv:
         issues.append("Missing a= (VMC)")
         sev = "INFO"
-    return [_row(domain, selector, txt, "; ".join(issues), sev)]
+    return [make_row(domain, "BIMI", selector, txt, "; ".join(issues), sev)]
